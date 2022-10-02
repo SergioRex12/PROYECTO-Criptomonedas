@@ -1,6 +1,9 @@
 import { Api } from "./api.js"
+import { UI } from "./ui.js";
 
 const api = new Api();
+const ui = new UI();
+
 
 document.addEventListener('DOMContentLoaded',() => {
     addCryptoList();
@@ -9,54 +12,59 @@ document.addEventListener('DOMContentLoaded',() => {
 })
 
 //Añade los nombres de las cryptos a la lista
-function addCryptoList() {
+async function addCryptoList() {
     //Llamo la api
-    const lista = api.getCryptoNames();
-    
-    //Para eseprar que la api responda
-    setTimeout(() => {
-        
-        const rowCrypto = document.querySelector('#criptomonedas');
+    const lista = await api.getCryptoNames();
 
-        lista.forEach(item => {
-            const {nombre, inicial} = item;
-            rowCrypto.innerHTML += `
+    const rowCrypto = document.querySelector('#criptomonedas');
+
+    lista.Data.forEach(item => {
+        const nombre = item.CoinInfo.FullName;
+        const inicial = item.CoinInfo.Internal;
+
+        rowCrypto.innerHTML += `
             <option value=${inicial}>${nombre}</option>
-            `;
-        });
-
-    }, 500);
+        `;
+    });
 }
 
 //Comprobamos el form
 function checkData(e) {
     e.preventDefault();
+
     const monedaSel = document.querySelector('#moneda').value;
     const cryptoSel = document.querySelector('#criptomonedas').value;
 
+    if (monedaSel === "" || cryptoSel === "") return ui.alerta("Selecciona todos los campos");
+    const zona = document.querySelector('#resultado');
+    
+    while (zona.firstChild) {
+        zona.firstChild.remove()
+    }
 
-    if (monedaSel === "" || cryptoSel === "") return console.log("Selecciona todos los campos");
-
+    ui.spinner();
     searchData(monedaSel,cryptoSel);
 }
 
 //Buscamos la crypto que elejiste con su moneda
-function searchData(moneda, crypto) {
-    let datos = api.getCrypto(moneda,crypto);
+async function searchData(moneda, crypto) {
+    let datos = await api.getCrypto(moneda,crypto);
+  
+    const zona = document.querySelector('#resultado');
 
-    setTimeout(() => {
-        const zona = document.querySelector('#resultado');
-        datos = datos[0].DISPLAY[crypto][moneda];
-        const {LOWDAY, HIGHDAY, PRICE, CHANGEPCTDAY} = datos;
+    datos = datos.DISPLAY[crypto][moneda];
+    const {LOWDAY, HIGHDAY, PRICE, CHANGEPCTDAY, LASTUPDATE} = datos;
+    
+    ui.spinner();
 
-        console.log(datos);
-        const div = document.createElement("div");
-        div.innerHTML = `
-            <h1>test</h1>
-            <p>test2</p>
+    const div = document.createElement("div");
+    div.innerHTML = `
+        <p class ="precio">El precio es: <span> ${PRICE} </span>  </p>
+        <p>Precio más alto del día: <span> ${HIGHDAY} </span>  </p>
+        <p>Precio más bajo del día: <span"> ${LOWDAY} </span>  </p>
+        <p>Variación últimas 24 horas: <span> ${CHANGEPCTDAY}% </span>  </p>
+        <p>Última actualización: <span> ${LASTUPDATE} </span>  </p>
+    `;
+    zona.appendChild(div);
         
-        `;
-        zona.appendChild(div);
-        
-    }, 1000);
 }

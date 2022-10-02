@@ -5,35 +5,26 @@ export class Api {
     constructor() {}
 
     //Saca los nombres de las cryptos más populares (10) 
-    getCryptoNames() {
+    async getCryptoNames() {
         const url = `https://min-api.cryptocompare.com/data/top/mktcapfull?limit=10&tsym=USD&api_key=${apiKey}`;
-        let objNombres = [];
+        try {
+            const consulta = await fetch(url);
+            const resutlado = await consulta.json();
 
-        fetch(url) 
-            .then(resultado => resultado.json())
-            .then(resultado => {
+            return resutlado;
 
-                //Creamos el objeto con todas las monedas 
-                resultado.Data.forEach(item => {
-                    objNombres.push({
-                        nombre: item.CoinInfo.FullName,
-                        inicial: item.CoinInfo.Internal
-                    })
-                });
-            })
-
-        return objNombres;
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     //Saca los datos de una crypto 
-    getCrypto(moneda,crypto)
+    async getCrypto(moneda,crypto)
     {
         const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${crypto}&tsyms=${moneda}`;
-        let data = [];
-        fetch(url)
-            .then(resultado => resultado.json())
-            .then(resultado => data.push(resultado));
-
-        return data;    
+        
+        const consulta = await fetch(url);
+        const resultado = await consulta.json();
+        return resultado;    
     }
 } 
