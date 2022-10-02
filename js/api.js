@@ -23,8 +23,12 @@ export class Api {
     {
         const url = `https://min-api.cryptocompare.com/data/pricemultifull?fsyms=${crypto}&tsyms=${moneda}`;
         
-        const consulta = await fetch(url);
-        const resultado = await consulta.json();
-        return resultado;    
+        try {
+            const consulta = await fetch(url);
+            const resultado = await consulta.json();
+            return resultado;    
+        } catch (error) {
+            console.log(error);
+        }
     }
 } 
